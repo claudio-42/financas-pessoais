@@ -1,0 +1,9 @@
+"use client";
+import {Children,isValidElement,useEffect,useState,type ReactNode} from 'react';
+import MagicBento from './reactbits/MagicBento';
+import TechText from './reactbits/TechText';
+import CursorGrid from './reactbits/CursorGrid';
+import TargetCursor from './reactbits/TargetCursor';
+export function TechHeading({text}:{text:string}){return <div className="tech-heading" role="heading" aria-level={1} aria-label={text}><TechText text={text} fontSize={46} fontWeight={600} color="#f4efff" accentColor="#bc9bf0" align="left" intro="assemble" introDuration={.8} guides={false} labels={false} selection={false} draggable={false}/></div>}
+export function GlassBackdrop(){const [cursor,setCursor]=useState(false);useEffect(()=>{const q=window.matchMedia('(pointer:fine) and (prefers-reduced-motion:no-preference)');setCursor(q.matches);const update=()=>setCursor(q.matches);q.addEventListener('change',update);return()=>q.removeEventListener('change',update);},[]);return <><div className="ambient-grid" aria-hidden="true"><CursorGrid color="#aa85e9" gridColor="#71657f" gridOpacity={.05} maxOpacity={.15} cellSize={70} spotlight={0} ambient={.04}/></div>{cursor&&<TargetCursor targetSelector="button, a" hideDefaultCursor={false} size={22} padding={4} cursorColor="#c6a4ff" cursorColorOnTarget="#ccfa89" spinDuration={8} showLabel={false}/>}</>}
+export function FinanceBento({children}:{children:ReactNode}){const sections=Children.toArray(children).filter(isValidElement);const blocks=sections.flatMap(section=>Children.toArray((section.props as {children:ReactNode}).children));return <MagicBento className="finance-bento" columns={3} rowHeight={150} gap={20} radius={22} enableBorderGlow={false} enableSpotlight={false} enableStars={false} enableTilt={false} enableMagnetism={false} clickEffect={false} textAutoHide={false} items={blocks.map((content,i)=>({id:i,content,colSpan:i===0?2:i===2?2:1,rowSpan:i>=2?3:2}))}/>}

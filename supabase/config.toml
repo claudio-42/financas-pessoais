@@ -1,0 +1,4 @@
+project_id = "financas-pessoais"
+
+[functions.sync-pluggy]
+verify_jwt = true
