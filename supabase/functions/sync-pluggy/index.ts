@@ -27,9 +27,9 @@ Deno.serve(async (req) => {
 
   if (user.id !== "241150e0-ff57-477c-8b35-6787982f0772") return new Response(JSON.stringify({ error: "Acesso não autorizado" }), { status: 403, headers: cors });
 
-  const clientId = Deno.env.get("PLUGGY_CLIENT_ID");
-  const clientSecret = Deno.env.get("PLUGGY_CLIENT_SECRET");
-  const itemId = Deno.env.get("PLUGGY_ITEM_ID");
+  const clientId = Deno.env.get("PLUGGY_CLIENT_ID")?.trim();
+  const clientSecret = Deno.env.get("PLUGGY_CLIENT_SECRET")?.trim();
+  const itemId = Deno.env.get("PLUGGY_ITEM_ID")?.trim();
   if (!clientId || !clientSecret || !itemId) return new Response(JSON.stringify({ error: "Pluggy ainda não configurado" }), { status: 503, headers: cors });
 
   try {
@@ -40,10 +40,14 @@ Deno.serve(async (req) => {
     const { apiKey } = await authResponse.json();
     const pluggyHeaders = { "X-API-KEY": apiKey };
     const itemResponse = await fetch(`https://api.pluggy.ai/items/${encodeURIComponent(itemId)}`, { headers: pluggyHeaders });
-    if (!itemResponse.ok) return new Response(JSON.stringify({
-      synced: 0,
-      warning: "O Item ID salvo não pertence ao mesmo projeto Pluggy do Client ID e Client Secret.",
-    }), { headers: cors });
+    if (!itemResponse.ok) {
+      const itemError = await itemResponse.json().catch(() => ({}));
+      console.error("Pluggy item rejected", JSON.stringify({ status: itemResponse.status, code: itemError?.code, message: itemError?.message }));
+      return new Response(JSON.stringify({
+        synced: 0,
+        warning: `A Pluggy recusou o Item ID (HTTP ${itemResponse.status}${itemError?.code ? ` — ${itemError.code}` : ""}).`,
+      }), { headers: cors });
+    }
     const item = await itemResponse.json();
     const accountsResponse = await fetch(`https://api.pluggy.ai/accounts?itemId=${encodeURIComponent(itemId)}`, { headers: pluggyHeaders });
     if (!accountsResponse.ok) throw new Error("Falha ao carregar as contas");
