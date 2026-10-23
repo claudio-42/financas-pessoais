@@ -36,11 +36,13 @@ create policy "own fixed expenses insert" on public.fixed_expenses for insert to
 create policy "own fixed expenses update" on public.fixed_expenses for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
 create policy "own fixed expenses delete" on public.fixed_expenses for delete to authenticated using ((select auth.uid()) = user_id);
 create policy "own transactions select" on public.transactions for select to authenticated using ((select auth.uid()) = user_id);
+create policy "own transactions insert" on public.transactions for insert to authenticated with check ((select auth.uid()) = user_id);
+create policy "own transactions update" on public.transactions for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
 
 revoke all on public.fixed_expenses from anon;
 revoke all on public.transactions from anon;
 grant select, insert, update, delete on public.fixed_expenses to authenticated;
-grant select on public.transactions to authenticated;
+grant select, insert, update on public.transactions to authenticated;
 
 create index if not exists fixed_expenses_user_id_idx on public.fixed_expenses(user_id);
 create index if not exists transactions_user_date_idx on public.transactions(user_id, transaction_date desc);

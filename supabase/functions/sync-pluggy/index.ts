@@ -20,7 +20,6 @@ Deno.serve(async (req) => {
   const token = authHeader.replace(/^Bearer\s+/i, "");
   const url = Deno.env.get("SUPABASE_URL")!;
   const anon = Deno.env.get("SUPABASE_ANON_KEY")!;
-  const serviceRole = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const authClient = createClient(url, anon, { global: { headers: { Authorization: authHeader } } });
   const { data: { user }, error: authError } = await authClient.auth.getUser(token);
   if (authError || !user) return new Response(JSON.stringify({ error: "Sessão inválida" }), { status: 401, headers: cors });
@@ -84,9 +83,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    const admin = createClient(url, serviceRole, { auth: { persistSession: false } });
     if (records.length) {
-      const { error } = await admin.from("transactions").upsert(records, { onConflict: "user_id,id" });
+      const { error } = await authClient.from("transactions").upsert(records, { onConflict: "user_id,id" });
       if (error) throw error;
     }
     return new Response(JSON.stringify({
