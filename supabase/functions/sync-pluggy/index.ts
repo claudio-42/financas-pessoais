@@ -40,7 +40,10 @@ Deno.serve(async (req) => {
     const { apiKey } = await authResponse.json();
     const pluggyHeaders = { "X-API-KEY": apiKey };
     const itemResponse = await fetch(`https://api.pluggy.ai/items/${encodeURIComponent(itemId)}`, { headers: pluggyHeaders });
-    if (!itemResponse.ok) throw new Error("O Item ID não pertence a estas credenciais Pluggy");
+    if (!itemResponse.ok) return new Response(JSON.stringify({
+      synced: 0,
+      warning: "O Item ID salvo não pertence ao mesmo projeto Pluggy do Client ID e Client Secret.",
+    }), { headers: cors });
     const item = await itemResponse.json();
     const accountsResponse = await fetch(`https://api.pluggy.ai/accounts?itemId=${encodeURIComponent(itemId)}`, { headers: pluggyHeaders });
     if (!accountsResponse.ok) throw new Error("Falha ao carregar as contas");
